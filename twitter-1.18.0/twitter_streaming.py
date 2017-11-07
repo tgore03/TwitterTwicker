@@ -19,13 +19,13 @@ oauth = OAuth(ACCESS_TOKEN, ACCESS_SECRET, CONSUMER_KEY, CONSUMER_SECRET)
 twitter_stream = TwitterStream(auth=oauth)
 
 # Get a sample of the public data following through Twitter
-iterator = twitter_stream.statuses.sample()
+iterator = twitter_stream.statuses.filter(track="Google", language="en")
 
 # Print each tweet in the stream to the screen 
 # Here we set it to stop after getting 1000 tweets. 
 # You don't have to set it to stop, but can continue running 
 # the Twitter API to collect data for days or even longer. 
-tweet_count = 1
+tweet_count = 3000
 for tweet in iterator:
     tweet_count -= 1
     # Twitter Python Tool wraps the data returned by Twitter 
