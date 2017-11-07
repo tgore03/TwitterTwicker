@@ -1,0 +1,10 @@
+Consumer Key (API Key) pIboRFJU8EN17UVyis1qCuOtS
+Consumer Secret (API Secret) 52XINB2kmqBPdlNv1WCHreoJI9vpmBtyfqywBnSFUQnbrMUmFO
+Owner tanmaygore_03
+Owner ID 927683752532365313
+
+
+Access Token 927683752532365313-tBAFC5zBzRpG7PcF8K9Hq9fPltGLyhe
+Access Token Secret 4fHIQYa3CMOAJJqt4HqjQamVoJu4LvZWha3x8KczLCb1x
+Owner tanmaygore_03
+Owner ID 927683752532365313
