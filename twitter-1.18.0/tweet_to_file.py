@@ -25,23 +25,26 @@ iterator = twitter_stream.statuses.filter(track="Google", language="en")
 # Here we set it to stop after getting 1000 tweets. 
 # You don't have to set it to stop, but can continue running 
 # the Twitter API to collect data for days or even longer. 
-tweet_count = 2
+tweet_count = 1000
 data = "{\n\"tweetno\": ["
+data_dict = {}
+data_dict["tweetno"] = []
 
 for tweet in iterator:
+    print tweet_count
     tweet_count -= 1
     # Twitter Python Tool wraps the data returned by Twitter 
     # as a TwitterDictResponse object.
     # We convert it back to the JSON format to print/score
     
-    data = data + json.dumps(tweet)  
+    data_dict["tweetno"].append(tweet)
     
     # The command below will do pretty printing for JSON data, try it out
     # print json.dumps(tweet, indent=4)
        
     if tweet_count <= 0:
-        data += "]\n}"
         break 
-    data = data +","
 
-print data
+with open('data.json', 'w') as outfile:
+    json.dump(data_dict, outfile)
+
