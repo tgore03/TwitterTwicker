@@ -54,5 +54,7 @@ def get_tweets():
 	for i in tfidf:
 		for k,v in i.items():
 			print k, v
+			
+	print tfidf
 
 get_tweets()
