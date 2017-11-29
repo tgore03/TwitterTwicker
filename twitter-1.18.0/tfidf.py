@@ -47,10 +47,12 @@ def get_tweets():
 		temp_tfidf = {}
 		for k, v in item.items():
 			idf_val = idf[k]
-			temp_tfidf = idf[k]*v
+			temp_tfidf[k] = idf[k]*v
 		tfidf.append(temp_tfidf)
 
+	#print tfidf
 	for i in tfidf:
-		print i
+		for k,v in i.items():
+			print k, v
 
 get_tweets()
