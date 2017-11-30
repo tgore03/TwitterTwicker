@@ -94,12 +94,12 @@ def AllWord():
    
 AllWord() 
 
-
+zerosOnEveryRecipe = np.zeros([len(tfidf),len(index_word)])
 def addingToZerosArr():
     i = 0;
     ind = 0;
 
-    zerosOnEveryRecipe = np.zeros([len(tfidf),len(index_word)])
+    #zerosOnEveryRecipe = np.zeros([len(tfidf),len(index_word)])
 
     v = True;
 
@@ -132,11 +132,5 @@ def KmeansAnalysis():
     centroids = kmeans.cluster_centers_  #grab the centroids 
     labels = kmeans.labels_  # and the labels
     count = count + 1
-    
-
+	
 KmeansAnalysis()
-
-
-
-
-
