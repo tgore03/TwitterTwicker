@@ -37,11 +37,11 @@ users = {}
 
 def initvar():
     global tfidf, words_set, total, arr_tf, index_word
-    tfidf = [{}]    
-    words_set = {}  
+    tfidf = [{}]
+    words_set = {}
     total = 0
-    arr_tf = []     
-    index_word = {} 
+    arr_tf = []
+    index_word = {}
 
 def load_data_from_file():
     #print "load_data()"
@@ -49,7 +49,7 @@ def load_data_from_file():
     tweets = json.load(open('data.json'))['tweetno']
 
 def load_data_from_json():
-    # Variables that contains the user credentials to access Twitter API 
+    # Variables that contains the user credentials to access Twitter API
     ACCESS_TOKEN = '927683752532365313-tBAFC5zBzRpG7PcF8K9Hq9fPltGLyhe'
     ACCESS_SECRET = '4fHIQYa3CMOAJJqt4HqjQamVoJu4LvZWha3x8KczLCb1x'
     CONSUMER_KEY = 'pIboRFJU8EN17UVyis1qCuOtS'
@@ -72,13 +72,13 @@ def load_data_from_json():
         if tweet.get("text") is None:
             #print "skipped a tweet"
             continue
-        
+
         tweet_count -= 1
         data_dict["tweetno"].append(tweet)
 
         if tweet_count <= 0:
             break
-    
+
     global new_tweets
     new_tweets = data_dict['tweetno']
 
@@ -103,7 +103,7 @@ def get_tweets():
                     term_frequency[word] = 1.0
         for k,v in term_frequency.items():
             term_frequency[k] = v/tweet_length
-        arr_tf.append(term_frequency)	
+        arr_tf.append(term_frequency)
 
     total_tweets = len(arr_tf)
 
@@ -117,7 +117,7 @@ def get_tweets():
             #print doc_word_freq
         idf[word] = math.log(total_tweets/doc_word_freq)
         documents_per_word_count[word] = doc_word_freq
-        
+
 
 	#tfidf = []
     for item in arr_tf:
@@ -133,10 +133,10 @@ def get_tweets():
 	#for i in tfidf:
 		#for k,v in i.items():
 			#print k, v
-		    
+
 
 ##get_tweets()
-    
+
 
 
 def AllWord():
@@ -182,7 +182,7 @@ def addingToZerosArr():
         i = i + 1
 
     #print len(zerosOnEveryRecipe[1])
-    
+
 
 ##addingToZerosArr()
 
@@ -203,7 +203,7 @@ def KmeansAnalysis():
     #print labels.tolist()
     count = count + 1
     print "Prediction Model Generated\n"
-    
+
 
 ##KmeansAnalysis()
 
@@ -231,19 +231,19 @@ def test():
     print
     while True:
         #print "\n\n\n\n *****************************************************************\n"
-        
+
         inputstr=raw_input("Press Enter for next iterations or type 'exit' to end. \n")
         if inputstr.startswith("exit"):
             break
         global new_tweet, idf, words_set, new_tfidf, total_tweets, index_word, documents_per_word_count
         user_name = None
-        
-        #Get a single tweet 
+
+        #Get a single tweet
         load_data_from_json()
 
         #obtain the tf values for this tweet
         for item in new_tweets:
-            print 
+            print
             sentence = item.get("text").split()
             print "Hi", item.get("user").get("screen_name")+ ". Lets find some new users for you to follow."
             print "Post something on Twitter"
@@ -251,7 +251,7 @@ def test():
             term_frequency = {}
             new_tfidf={}
             tweet_length = 0
-            
+
             for word in sentence:
                 if word.startswith('http'):
                     continue
@@ -265,7 +265,7 @@ def test():
 
                 #for each word in sentence, get the the previous idf value for that word.
                 new_tfidf[word] = documents_per_word_count[word] +1
-                    
+
             for k,v in term_frequency.items():
                 term_frequency[k] = v/tweet_length                      #get the tf
                 new_tfidf[k] = math.log(total_tweets / new_tfidf[k])    #get the idf
@@ -277,13 +277,13 @@ def test():
         #Compute the vector matrix
         #print len(index_word)
         vector_matrix = np.zeros([1, len(index_word)]) #initialize elements in vector matrix to 0
-        
+
         for word in new_tfidf:
             if word in index_word:
                 index = index_word[word]
                 vector_matrix[0][index] = new_tfidf[word]
         #print vector_matrix.tolist()
-        
+
         #print "tfidf obtained"
 
 
@@ -296,8 +296,8 @@ def test():
         #Use this to recommend new users
         # Add the user recommendation code here.
 
-        
-        
-    
+
+
+
 train()
 test()
