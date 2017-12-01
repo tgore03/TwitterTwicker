@@ -6,35 +6,85 @@ import matplotlib.pyplot as plt
 from matplotlib import style
 style.use("ggplot")
 from sklearn.cluster import KMeans
+try:
+    import json
+except ImportError:
+    import simplejson as json
+from twitter import Twitter, OAuth, TwitterHTTPError, TwitterStream
 
 
-tfidf = [{}]
-##def get_tweets():
-##data = json.load(open('data.json'))
-words_set = {}
-##tweets = data['tweetno']
-total = 0
+idf = {}                    #idf value of each unique word from all tweets
+arr_tf = None               #tv value of each word in each tweet
+tfidf = None                #tfidf of each word in each tweet
+documents_per_word_count={} #No of documents that word appears in.
+
+words_set = None            #dictionary of words
+index_word = None           #indexing the words in dictionary
+zerosOnEveryRecipe = None   #initial vector matrix
+
+kmeans = None               #This variable does not change for test data
+
+total = None
+total_tweets = None         #Total number of tweets in training set
 tweets = None
-arr_tf = []
-#Assigning index to every word in the list
-index_word = {}
-zerosOnEveryRecipe = None
+
+new_tweet = None            #Contains new tweet
+data_dict = None            #Json object containing new tweet
+new_tfidf = {}              #TFIDF for each word in new tweet
+
+users = {}
 
 
+def initvar():
+    global tfidf, words_set, total, arr_tf, index_word
+    tfidf = [{}]    
+    words_set = {}  
+    total = 0
+    arr_tf = []     
+    index_word = {} 
 
 def load_data_from_file():
-    print "load_data()"
+    #print "load_data()"
     global tweets
     tweets = json.load(open('data.json'))['tweetno']
 
-def load_data_from_json(jsondata):
-    global tweets
-    tweets = data['tweetno']
+def load_data_from_json():
+    # Variables that contains the user credentials to access Twitter API 
+    ACCESS_TOKEN = '927683752532365313-tBAFC5zBzRpG7PcF8K9Hq9fPltGLyhe'
+    ACCESS_SECRET = '4fHIQYa3CMOAJJqt4HqjQamVoJu4LvZWha3x8KczLCb1x'
+    CONSUMER_KEY = 'pIboRFJU8EN17UVyis1qCuOtS'
+    CONSUMER_SECRET = '52XINB2kmqBPdlNv1WCHreoJI9vpmBtyfqywBnSFUQnbrMUmFO'
 
+    oauth = OAuth(ACCESS_TOKEN, ACCESS_SECRET, CONSUMER_KEY, CONSUMER_SECRET)
+
+    # Initiate the connection to Twitter Streaming API
+    twitter_stream = TwitterStream(auth=oauth)
+
+    # Get a sample of the public data following through Twitter
+    iterator = twitter_stream.statuses.sample()
+
+    global data_dict
+    tweet_count = 1
+    data_dict = {}
+    data_dict["tweetno"] = []
+
+    for tweet in iterator:
+        if tweet.get("text") is None:
+            #print "skipped a tweet"
+            continue
+        
+        tweet_count -= 1
+        data_dict["tweetno"].append(tweet)
+
+        if tweet_count <= 0:
+            break
+    
+    global new_tweets
+    new_tweets = data_dict['tweetno']
 
 def get_tweets():
-    print "get_tweets()"
-    global tweets, word_set, arr_tf, tfidf
+    #print "get_tweets()"
+    global tweets, word_set, arr_tf, tfidf, total_tweets
 
     for item in tweets:
         sentence = item.get("text").split()
@@ -52,19 +102,13 @@ def get_tweets():
                 else:
                     term_frequency[word] = 1.0
         for k,v in term_frequency.items():
-            #print k,v
             term_frequency[k] = v/tweet_length
-            #print k,v
         arr_tf.append(term_frequency)	
 
     total_tweets = len(arr_tf)
-	#print len(words_set) # 4881
-	#print len(arr_tf)	 # 1000
-
-    print "tf obtained"
 
 
-    idf = {}
+    global idf
     for word in words_set:
         doc_word_freq = 0
         for item in arr_tf:
@@ -72,8 +116,8 @@ def get_tweets():
                 doc_word_freq += 1
             #print doc_word_freq
         idf[word] = math.log(total_tweets/doc_word_freq)
-	#print len(idf) #4881
-    print "idf obtained"
+        documents_per_word_count[word] = doc_word_freq
+        
 
 	#tfidf = []
     for item in arr_tf:
@@ -83,22 +127,21 @@ def get_tweets():
             temp_tfidf[k] = idf[k]*v
             tfidf.append(temp_tfidf)
 
-    print "tfidf obtained"
+    #print "tfidf obtained"
 
 	#print tfidf
 	#for i in tfidf:
 		#for k,v in i.items():
 			#print k, v
-			
-    print tfidf[1]
-
+		    
 
 ##get_tweets()
+    
 
 
 def AllWord():
     global tfidf, word_set, index_word
-    print "AllWord()"
+    #print "AllWord()"
     tf_vecs = tfidf
     #print tf_vecs
     everyWord = []
@@ -110,7 +153,7 @@ def AllWord():
         #alldicts.append(dicts)
         everyWord.append(k)
 
-    print len(everyWord)
+    #print len(everyWord)
 
     i = 0
     for word in everyWord:
@@ -122,11 +165,12 @@ def AllWord():
 ##zerosOnEveryRecipe = np.zeros([len(tfidf),len(index_word)])
 def addingToZerosArr():
     global tfidf, index_word, arr_tf, zerosOnEveryRecipe
-    print "addingToZerosArr()"
+    #print "addingToZerosArr()"
     i = 0;
     ind = 0;
 
     zerosOnEveryRecipe = np.zeros([len(tfidf),len(index_word)])
+    #print zerosOnEveryRecipe
 
     v = True;
 
@@ -137,27 +181,28 @@ def addingToZerosArr():
 
         i = i + 1
 
-    print len(zerosOnEveryRecipe[1])
-    #print zerosOnEveryRecipe[0].tolist()
+    #print len(zerosOnEveryRecipe[1])
+    
 
 ##addingToZerosArr()
 
 def KmeansAnalysis():
-    print "KmeansAnalysis()"
+    #print "KmeansAnalysis()"
 
-    global zerosOnEveryRecipe
+    global zerosOnEveryRecipe, kmeans
     arrayOfIntrest = np.array(zerosOnEveryRecipe)
 
     count = 0
-    kmeans = KMeans(n_clusters = 8) #make ten clusters
+    kmeans = KMeans(n_clusters = 10, n_init = 10) #make ten clusters
     #while(count < 100):
     kmeans.fit(arrayOfIntrest)  #fit the data - learning
     centroids = kmeans.cluster_centers_  #grab the centroids 
     labels = kmeans.labels_  # and the labels
-    print len(centroids[0])
-    print len(labels)
-    print labels.tolist()
+    #print len(centroids[0])
+    #print len(labels)
+    #print labels.tolist()
     count = count + 1
+    print "Prediction Model Generated\n"
     
 
 ##KmeansAnalysis()
@@ -168,15 +213,91 @@ def KmeansAnalysis():
 
 #**********************************************************************#
 
-#Start of Program
-print "Program start"
-#getTrainingSet()
-load_data_from_file()
-get_tweets()
+def train():
+    #Start of Program
+    print "Hi there. Please wait while we generate the prediction model\n"
+    #getTrainingSet()
+    initvar()
+    load_data_from_file()
+    get_tweets()
 
-AllWord()
-addingToZerosArr()
-KmeansAnalysis()
+    AllWord()
+    addingToZerosArr()
+    KmeansAnalysis()
+    global kmeans
+    return kmeans
+
+def test():
+    print
+    while True:
+        #print "\n\n\n\n *****************************************************************\n"
+        
+        inputstr=raw_input("Press Enter for next iterations or type 'exit' to end. \n")
+        if inputstr.startswith("exit"):
+            break
+        global new_tweet, idf, words_set, new_tfidf, total_tweets, index_word, documents_per_word_count
+        user_name = None
+        
+        #Get a single tweet 
+        load_data_from_json()
+
+        #obtain the tf values for this tweet
+        for item in new_tweets:
+            print 
+            sentence = item.get("text").split()
+            print "Hi", item.get("user").get("screen_name")+ ". Lets find some new users for you to follow."
+            print "Post something on Twitter"
+            print "Your New Tweet: ", item.get("text")
+            term_frequency = {}
+            new_tfidf={}
+            tweet_length = 0
+            
+            for word in sentence:
+                if word.startswith('http'):
+                    continue
+                tweet_length+=1.0
+                if word not in words_set:
+                    continue
+                elif word in term_frequency:
+                    term_frequency[word] += 1.0
+                else:
+                    term_frequency[word] = 1.0
+
+                #for each word in sentence, get the the previous idf value for that word.
+                new_tfidf[word] = documents_per_word_count[word] +1
+                    
+            for k,v in term_frequency.items():
+                term_frequency[k] = v/tweet_length                      #get the tf
+                new_tfidf[k] = math.log(total_tweets / new_tfidf[k])    #get the idf
+                new_tfidf[k] = term_frequency[k] * new_tfidf[k]         #get the tfidf
+
+            #print new_tfidf
 
 
+        #Compute the vector matrix
+        #print len(index_word)
+        vector_matrix = np.zeros([1, len(index_word)]) #initialize elements in vector matrix to 0
+        
+        for word in new_tfidf:
+            if word in index_word:
+                index = index_word[word]
+                vector_matrix[0][index] = new_tfidf[word]
+        #print vector_matrix.tolist()
+        
+        #print "tfidf obtained"
 
+
+        #predict the label of new tweet
+        global kmeans
+        label = kmeans.predict(vector_matrix)
+        print label
+
+
+        #Use this to recommend new users
+        # Add the user recommendation code here.
+
+        
+        
+    
+train()
+test()

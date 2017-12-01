@@ -21,7 +21,7 @@ def getTrainingSet():
     twitter_stream = TwitterStream(auth=oauth)
 
     # Get a sample of the public data following through Twitter
-    iterator = twitter_stream.statuses.filter(track="Google", language="en")
+    iterator = twitter_stream.statuses.sample()
 
     # Print each tweet in the stream to the screen 
     # Here we set it to stop after getting 1000 tweets. 
@@ -33,6 +33,9 @@ def getTrainingSet():
     data_dict["tweetno"] = []
 
     for tweet in iterator:
+        if tweet.get("text") is None:
+            continue
+            print "skipped a tweet"
         #print tweet_count
         tweet_count -= 1
         # Twitter Python Tool wraps the data returned by Twitter 
