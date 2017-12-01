@@ -8,17 +8,15 @@ style.use("ggplot")
 from sklearn.cluster import KMeans
 
 
+#Global vars
 tfidf = [{}]
-##def get_tweets():
-##data = json.load(open('data.json'))
 words_set = {}
-##tweets = data['tweetno']
 total = 0
 tweets = None
 arr_tf = []
 #Assigning index to every word in the list
 index_word = {}
-zerosOnEveryRecipe = None
+zerosOnEveryRecipe = [[]]
 
 
 
@@ -55,7 +53,7 @@ def get_tweets():
             #print k,v
             term_frequency[k] = v/tweet_length
             #print k,v
-        arr_tf.append(term_frequency)	
+        arr_tf.append(term_frequency)
 
     total_tweets = len(arr_tf)
 	#print len(words_set) # 4881
@@ -89,7 +87,7 @@ def get_tweets():
 	#for i in tfidf:
 		#for k,v in i.items():
 			#print k, v
-			
+
     print tfidf[1]
 
 
@@ -116,10 +114,10 @@ def AllWord():
     for word in everyWord:
         index_word[word] = i
         i = i+1
-   
+
 ##AllWord()
 
-##zerosOnEveryRecipe = np.zeros([len(tfidf),len(index_word)])
+#zerosOnEveryRecipe = np.zeros([len(tfidf),len(index_word)])
 def addingToZerosArr():
     global tfidf, index_word, arr_tf, zerosOnEveryRecipe
     print "addingToZerosArr()"
@@ -137,7 +135,7 @@ def addingToZerosArr():
 
         i = i + 1
 
-    print len(zerosOnEveryRecipe[1])
+    #print len(zerosOnEveryRecipe[1])
     #print zerosOnEveryRecipe[0].tolist()
 
 ##addingToZerosArr()
@@ -152,15 +150,15 @@ def KmeansAnalysis():
     kmeans = KMeans(n_clusters = 8) #make ten clusters
     #while(count < 100):
     kmeans.fit(arrayOfIntrest)  #fit the data - learning
-    centroids = kmeans.cluster_centers_  #grab the centroids 
+    centroids = kmeans.cluster_centers_  #grab the centroids
     labels = kmeans.labels_  # and the labels
-    print len(centroids[0])
+    #print len(centroids[0])
     print len(labels)
     print labels.tolist()
     count = count + 1
-    
 
-##KmeansAnalysis()
+
+#KmeansAnalysis()
 
 
 
@@ -177,6 +175,3 @@ get_tweets()
 AllWord()
 addingToZerosArr()
 KmeansAnalysis()
-
-
-
