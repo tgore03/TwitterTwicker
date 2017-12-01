@@ -8,11 +8,9 @@ style.use("ggplot")
 from sklearn.cluster import KMeans
 
 
+
 tfidf = [{}]
-##def get_tweets():
-##data = json.load(open('data.json'))
 words_set = {}
-##tweets = data['tweetno']
 total = 0
 tweets = None
 arr_tf = []
@@ -21,7 +19,7 @@ index_word = {}
 zerosOnEveryRecipe = None
 
 
-
+    
 def load_data_from_file():
     print "load_data()"
     global tweets
@@ -35,7 +33,7 @@ def load_data_from_json(jsondata):
 def get_tweets():
     print "get_tweets()"
     global tweets, word_set, arr_tf, tfidf
-
+    
     for item in tweets:
         sentence = item.get("text").split()
         term_frequency = {}
@@ -63,7 +61,7 @@ def get_tweets():
 
     print "tf obtained"
 
-
+    
     idf = {}
     for word in words_set:
         doc_word_freq = 0
@@ -74,7 +72,7 @@ def get_tweets():
         idf[word] = math.log(total_tweets/doc_word_freq)
 	#print len(idf) #4881
     print "idf obtained"
-
+    
 	#tfidf = []
     for item in arr_tf:
         temp_tfidf = {}
@@ -84,7 +82,7 @@ def get_tweets():
             tfidf.append(temp_tfidf)
 
     print "tfidf obtained"
-
+    
 	#print tfidf
 	#for i in tfidf:
 		#for k,v in i.items():
@@ -93,7 +91,7 @@ def get_tweets():
     print tfidf[1]
 
 
-##get_tweets()
+#get_tweets()
 
 
 def AllWord():
@@ -117,9 +115,9 @@ def AllWord():
         index_word[word] = i
         i = i+1
    
-##AllWord()
+#AllWord() 
 
-##zerosOnEveryRecipe = np.zeros([len(tfidf),len(index_word)])
+zerosOnEveryRecipe = np.zeros([len(tfidf),len(index_word)])
 def addingToZerosArr():
     global tfidf, index_word, arr_tf, zerosOnEveryRecipe
     print "addingToZerosArr()"
@@ -134,13 +132,13 @@ def addingToZerosArr():
         for word, val in tw.items():
             index = index_word[word]
             zerosOnEveryRecipe[i][index] = arr_tf[i][word]
-
+    
         i = i + 1
-
+        
     print len(zerosOnEveryRecipe[1])
     #print zerosOnEveryRecipe[0].tolist()
 
-##addingToZerosArr()
+#addingToZerosArr()
 
 def KmeansAnalysis():
     print "KmeansAnalysis()"
@@ -158,9 +156,10 @@ def KmeansAnalysis():
     print len(labels)
     print labels.tolist()
     count = count + 1
+<<<<<<< HEAD
     
 
-##KmeansAnalysis()
+#KmeansAnalysis()
 
 
 
@@ -173,10 +172,14 @@ print "Program start"
 #getTrainingSet()
 load_data_from_file()
 get_tweets()
-
+                      
 AllWord()
 addingToZerosArr()
 KmeansAnalysis()
 
 
 
+=======
+	
+KmeansAnalysis()
+>>>>>>> 22ca2a3d202b1d9182a0ee03b930eb86dea1a17b
