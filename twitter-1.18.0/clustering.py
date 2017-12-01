@@ -126,7 +126,7 @@ def addingToZerosArr():
     i = 0;
     ind = 0;
 
-    #zerosOnEveryRecipe = np.zeros([len(tfidf),len(index_word)])
+    zerosOnEveryRecipe = np.zeros([len(tfidf),len(index_word)])
 
     v = True;
 
