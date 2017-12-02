@@ -6,7 +6,8 @@ import matplotlib.pyplot as plt
 from matplotlib import style
 style.use("ggplot")
 from sklearn.cluster import KMeans
-
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
 
 #Global vars
 tfidf = [{}]
@@ -34,8 +35,34 @@ def get_tweets():
     print "get_tweets()"
     global tweets, word_set, arr_tf, tfidf
 
+    stop_words = set(stopwords.words('english'))
+    i = 0
     for item in tweets:
-        sentence = item.get("text").split()
+        #print item.get("text")
+        tweet =  item.get('text').split(' ')
+        #tweet.split(" ")
+        #print tweet
+        filteredTweet = ' '
+        for word in tweet:
+            #print word
+            #filteredTweet = []
+            #for t in tweet:
+                #print t
+            if(not word in stop_words):
+                #print word
+                filteredTweet += word
+                filteredTweet += ' '
+                #filteredTweet.append(word)
+        #print filteredTweet
+        #tweets[i] = ''.join(filteredTweet)
+
+        tweets[i] = (filteredTweet)
+        i = i+1
+
+
+    for item in tweets:
+        #sentence = item.get("text").split()
+        sentence = item.split(' ')
         term_frequency = {}
         tweet_length = 0
         for word in sentence:
