@@ -15,7 +15,7 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 
 idf = {}                    #idf value of each unique word from all tweets
-arr_tf = None               #tv value of each word in each tweet
+arr_tf = None               #tf value of each word in each tweet
 tfidf = None                #tfidf of each word in each tweet
 documents_per_word_count={} #No of documents that word appears in.
 
@@ -33,8 +33,9 @@ new_tweet = None            #Contains new tweet
 data_dict = None            #Json object containing new tweet
 new_tfidf = {}              #TFIDF for each word in new tweet
 
-users = {}
-
+users = []                 #Array of all the screen names
+classified_tweets =[]
+similar_tweets = {}
 
 def initvar():
     global tfidf, words_set, total, arr_tf, index_word
@@ -86,12 +87,14 @@ def load_data_from_json():
 
 def get_tweets():
     #print "get_tweets()"
-    global tweets, word_set, arr_tf, tfidf, total_tweets
+    global tweets, word_set, arr_tf, tfidf, total_tweets, users
 
     stop_words = set(stopwords.words('english'))
     i = 0
     for item in tweets:
         #print item.get("text")
+        user = item.get('user').get('screen_name')
+        users.append(user);
         tweet =  item.get('text').split(' ')
         #tweet.split(" ")
         #print tweet
@@ -111,7 +114,8 @@ def get_tweets():
 
         tweets[i] = (filteredTweet)
         i = i+1
-
+    # for u in users:
+    #         print u
 
     for item in tweets:
         #sentence = item.get("text").split()
@@ -217,18 +221,34 @@ def addingToZerosArr():
 def KmeansAnalysis():
     #print "KmeansAnalysis()"
 
-    global zerosOnEveryRecipe, kmeans
+    global zerosOnEveryRecipe, kmeans, classified_tweets, similar_tweets
     arrayOfInterest = np.array(zerosOnEveryRecipe)
 
     count = 0
-    kmeans = KMeans(n_clusters = 10, n_init = 10) #make ten clusters
+    kmeans = KMeans(n_clusters = 6, n_init = 6) #make ten clusters
     #while(count < 100):
     kmeans.fit(arrayOfInterest)  #fit the data - learning
     centroids = kmeans.cluster_centers_  #grab the centroids
     labels = kmeans.labels_  # and the labels
-    #print len(centroids[0])
-    #print len(labels)
-    #print labels.tolist()
+    classified_tweets = labels.tolist()
+    print labels.tolist()
+    # for item in classified_tweets:
+    #     print item
+    tweet = 0
+    for item in classified_tweets:
+        if item not in similar_tweets:
+            similar_tweets[item] = set()
+        for words in arr_tf[tweet]:
+            set_words = similar_tweets[item]
+            set_words.add(words)
+        similar_tweets[item] = set_words   
+        tweet += 1
+
+    for k,v in similar_tweets.items():
+        print k
+        for i in v:
+            print i
+
     count = count + 1
     print "Prediction Model Generated\n"
 
@@ -314,16 +334,25 @@ def test():
 
 
         #predict the label of new tweet
-        global kmeans
+        global kmeans, users
         label = kmeans.predict(vector_matrix)
-        print label
-
-
-        #Use this to recommend new users
-        # Add the user recommendation code here.
-
-
-
+        print "The new tweet is classified to cluster:", label
+        to_follow = []              # the users we are suggesting to follow
+        set_union = {}
+        #recommending users to follow other users
+        i = 0
+        for item in classified_tweets:
+            if label == item:
+                to_follow.append(users[i])
+            i += 1
+        
+        print "Users that you can follow:"
+        i=0
+        for user in to_follow:
+            if i <=10:
+                print to_follow[i]
+            i += 1
+ 
 
 train()
 test()
