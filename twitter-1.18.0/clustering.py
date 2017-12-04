@@ -1,6 +1,7 @@
 from tweet_to_file import *
 import json
 import math
+import string
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import style
@@ -13,6 +14,8 @@ except ImportError:
 from twitter import Twitter, OAuth, TwitterHTTPError, TwitterStream
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+from nltk.tokenize import RegexpTokenizer
+import string, re
 
 idf = {}                    #idf value of each unique word from all tweets
 arr_tf = None               #tf value of each word in each tweet
@@ -33,9 +36,13 @@ new_tweet = None            #Contains new tweet
 data_dict = None            #Json object containing new tweet
 new_tfidf = {}              #TFIDF for each word in new tweet
 
+
 users = []                 #Array of all the screen names
 classified_tweets =[]
 similar_tweets = {}
+
+tokenizer = RegexpTokenizer(r'\w+')
+
 
 def initvar():
     global tfidf, words_set, total, arr_tf, index_word
@@ -87,15 +94,22 @@ def load_data_from_json():
 
 def get_tweets():
     #print "get_tweets()"
-    global tweets, word_set, arr_tf, tfidf, total_tweets, users
+
+    global tweets, word_set, arr_tf, tfidf, total_tweets, users, tokenizer
+
 
     stop_words = set(stopwords.words('english'))
     i = 0
     for item in tweets:
         #print item.get("text")
+
         user = item.get('user').get('screen_name')
         users.append(user);
-        tweet =  item.get('text').split(' ')
+
+        #tweet =  item.get('text').split(' ')
+        newtweet = re.sub(r"http\S+", "",item.get('text') )
+        tweet = tokenizer.tokenize(newtweet)
+
         #tweet.split(" ")
         #print tweet
         filteredTweet = ' '
@@ -225,7 +239,7 @@ def KmeansAnalysis():
     arrayOfInterest = np.array(zerosOnEveryRecipe)
 
     count = 0
-    kmeans = KMeans(n_clusters = 6, n_init = 6) #make ten clusters
+    kmeans = KMeans(n_clusters = 7, n_init = 100) #make ten clusters
     #while(count < 100):
     kmeans.fit(arrayOfInterest)  #fit the data - learning
     centroids = kmeans.cluster_centers_  #grab the centroids
@@ -239,9 +253,7 @@ def KmeansAnalysis():
         if item not in similar_tweets:
             similar_tweets[item] = set()
         for words in arr_tf[tweet]:
-            set_words = similar_tweets[item]
-            set_words.add(words)
-        similar_tweets[item] = set_words   
+            similar_tweets[item].add(words)
         tweet += 1
 
     for k,v in similar_tweets.items():
@@ -283,6 +295,8 @@ def test():
         if inputstr.startswith("exit"):
             break
         global new_tweet, idf, words_set, new_tfidf, total_tweets, index_word, documents_per_word_count
+        global tokenizer
+        
         user_name = None
 
         #Get a single tweet
@@ -290,14 +304,15 @@ def test():
 
         #obtain the tf values for this tweet
         for item in new_tweets:
-            sentence = item.get("text").split()
+            newtweet = re.sub(r"http\S+", "",item.get('text'))
+            sentence = tokenizer.tokenize(newtweet)
+            #sentence = item.get("text").split()
             print "Hi", item.get("user").get("screen_name")+ ". Lets find some new users for you to follow."
             print "Post something on Twitter"
             print "Your New Tweet: ", item.get("text")
             term_frequency = {}
             new_tfidf={}
             tweet_length = 0
-
             for word in sentence:
                 if word.startswith('http'):
                     continue
@@ -314,7 +329,7 @@ def test():
 
             for k,v in term_frequency.items():
                 term_frequency[k] = v/tweet_length                      #get the tf
-                new_tfidf[k] = math.log(total_tweets / new_tfidf[k])    #get the idf
+                new_tfidf[k] = math.log(total_tweets+1 / new_tfidf[k])    #get the idf
                 new_tfidf[k] = term_frequency[k] * new_tfidf[k]         #get the tfidf
 
             #print new_tfidf
@@ -334,8 +349,9 @@ def test():
 
 
         #predict the label of new tweet
-        global kmeans, users
+        global kmeans, users, similar_tweets
         label = kmeans.predict(vector_matrix)
+
         print "The new tweet is classified to cluster:", label
         to_follow = []              # the users we are suggesting to follow
         set_union = {}
@@ -352,7 +368,33 @@ def test():
             if i <=10:
                 print to_follow[i]
             i += 1
- 
+
+        jac_sim = []
+        i = 0
+        sim = 0.0
+        intersection=0
+        for k,v in similar_tweets.items():
+            for k1,v1 in new_tfidf.items():
+                if k1 in v:
+                    intersection+=1
+            print "intersection: ",intersection, "union: ", len(v)
+            sim =  float(intersection)/len(v)
+            jac_sim.append(sim)
+            
+
+        # for k,v in similar_tweets.items():
+        #     sim = float(len(new_tfidf))/len(v)
+        #     print "len of tfif", len(new_tfidf), " and len of v", len(v)
+        #     jac_sim.append(sim)
+        #     i += 1
+
+        for i in jac_sim:
+            print i
+       
+        #Use this to recommend new users
+        # Add the user recommendation code here.
+
+
 
 train()
 test()
