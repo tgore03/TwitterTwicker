@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from matplotlib import style
 style.use("ggplot")
 from sklearn.cluster import KMeans
+from sklearn.metrics.pairwise import cosine_similarity
 try:
     import json
 except ImportError:
@@ -40,6 +41,7 @@ new_tfidf = {}              #TFIDF for each word in new tweet
 users = []                 #Array of all the screen names
 classified_tweets =[]
 similar_tweets = {}
+tweets_in_clusters = {}
 
 tokenizer = RegexpTokenizer(r'\w+')
 
@@ -216,7 +218,7 @@ def addingToZerosArr():
     ind = 0;
 
     zerosOnEveryRecipe = np.zeros([total_tweets,len(index_word)])
-    #print zerosOnEveryRecipe
+    #print zerosOnEveryTweet
 
     v = True;
 
@@ -235,11 +237,11 @@ def addingToZerosArr():
 def KmeansAnalysis():
     #print "KmeansAnalysis()"
 
-    global zerosOnEveryRecipe, kmeans, classified_tweets, similar_tweets
+    global zerosOnEveryRecipe, kmeans, classified_tweets, similar_tweets,tweets_in_clusters, words_set
     arrayOfInterest = np.array(zerosOnEveryRecipe)
 
     count = 0
-    kmeans = KMeans(n_clusters = 7, n_init = 100) #make ten clusters
+    kmeans = KMeans(n_clusters = 7, n_init = 10) #make ten clusters
     #while(count < 100):
     kmeans.fit(arrayOfInterest)  #fit the data - learning
     centroids = kmeans.cluster_centers_  #grab the centroids
@@ -249,12 +251,16 @@ def KmeansAnalysis():
     # for item in classified_tweets:
     #     print item
     tweet = 0
+
+
     for item in classified_tweets:
         if item not in similar_tweets:
             similar_tweets[item] = set()
         for words in arr_tf[tweet]:
             similar_tweets[item].add(words)
         tweet += 1
+
+
 
     for k,v in similar_tweets.items():
         print k
@@ -294,7 +300,7 @@ def test():
         inputstr=raw_input("Please press 'Enter' for next iterations or type 'exit' to end. \n")
         if inputstr.startswith("exit"):
             break
-        global new_tweet, idf, words_set, new_tfidf, total_tweets, index_word, documents_per_word_count
+        global new_tweet, idf, words_set, new_tfidf, total_tweets, index_word, documents_per_word_count, zerosOnEveryRecipe
         global tokenizer
         
         user_name = None
@@ -338,18 +344,19 @@ def test():
         #Compute the vector matrix
         #print len(index_word)
         vector_matrix = np.zeros([1, len(index_word)]) #initialize elements in vector matrix to 0
-
+        nC =np.ndarray(shape=(1, len(index_word)), dtype = float)
         for word in new_tfidf:
             if word in index_word:
                 index = index_word[word]
                 vector_matrix[0][index] = new_tfidf[word]
+                nC[0][index] = new_tfidf[word]
         #print vector_matrix.tolist()
 
         #print "tfidf obtained"
 
 
         #predict the label of new tweet
-        global kmeans, users, similar_tweets
+        global kmeans, users, similar_tweets, tweets_in_clusters
         label = kmeans.predict(vector_matrix)
 
         print "The new tweet is classified to cluster:", label
@@ -362,6 +369,16 @@ def test():
                 to_follow.append(users[i])
             i += 1
         
+
+        ############ number of tweets in every cluster ##############
+        for item in classified_tweets:
+            if item not in tweets_in_clusters:
+                tweets_in_clusters[item] = 1
+            else:
+                tweets_in_clusters[item] += 1
+
+
+
         print "Users that you can follow:"
         i=0
         for user in to_follow:
@@ -381,6 +398,49 @@ def test():
             sim =  float(intersection)/len(v)
             jac_sim.append(sim)
             
+        ################### COSINE SIMILARITY ###################
+        i0 , i1, i2, i3, i4, i5, i6 = 0,0,0,0,0,0,0
+
+        print len(index_word)
+        c0 =np.ndarray(shape=(tweets_in_clusters[0], len(index_word)), dtype = float)
+        c1 =np.ndarray(shape=(tweets_in_clusters[1], len(index_word)), dtype = float)
+        c2 =np.ndarray(shape=(tweets_in_clusters[2], len(index_word)), dtype = float)
+        c3 =np.ndarray(shape=(tweets_in_clusters[3], len(index_word)), dtype = float)
+        c4 =np.ndarray(shape=(tweets_in_clusters[4], len(index_word)), dtype = float)
+        c5 =np.ndarray(shape=(tweets_in_clusters[5], len(index_word)), dtype = float)
+        c6 =np.ndarray(shape=(tweets_in_clusters[6], len(index_word)), dtype = float)
+        
+
+        index =0
+        print len(zerosOnEveryRecipe[index])
+        for item in classified_tweets:
+            if item == 0:
+                c0[i0] = zerosOnEveryRecipe[index]
+                i0 +=1
+            elif item == 1:
+                c1[i1] = zerosOnEveryRecipe[index]
+                i1 +=1 
+            elif item == 2:
+                c1[i2] = zerosOnEveryRecipe[index]
+                i2 +=1
+            elif item == 3:
+                c1[i3] = zerosOnEveryRecipe[index]
+                i3 +=1
+            elif item == 4:
+                c1[i4] = zerosOnEveryRecipe[index]
+                i4 +=1
+            elif item == 5:
+                c1[i5] = zerosOnEveryRecipe[index]
+                i5 +=1
+            elif item == 6:
+                c1[i6] = zerosOnEveryRecipe[index]
+                i6 +=1
+            index += 1
+
+        
+        cos_sim = cosine_similarity(c0, nC)
+        print "cos sim", cos_sim
+
 
         # for k,v in similar_tweets.items():
         #     sim = float(len(new_tfidf))/len(v)
