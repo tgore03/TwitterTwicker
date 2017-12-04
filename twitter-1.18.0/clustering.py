@@ -1,6 +1,7 @@
 from tweet_to_file import *
 import json
 import math
+import string
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import style
@@ -13,6 +14,8 @@ except ImportError:
 from twitter import Twitter, OAuth, TwitterHTTPError, TwitterStream
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
+from nltk.tokenize import RegexpTokenizer
+import string, re
 
 idf = {}                    #idf value of each unique word from all tweets
 arr_tf = None               #tv value of each word in each tweet
@@ -34,7 +37,7 @@ data_dict = None            #Json object containing new tweet
 new_tfidf = {}              #TFIDF for each word in new tweet
 
 users = {}
-
+tokenizer = RegexpTokenizer(r'\w+')
 
 def initvar():
     global tfidf, words_set, total, arr_tf, index_word
@@ -86,13 +89,15 @@ def load_data_from_json():
 
 def get_tweets():
     #print "get_tweets()"
-    global tweets, word_set, arr_tf, tfidf, total_tweets
+    global tweets, word_set, arr_tf, tfidf, total_tweets, tokenizer
 
     stop_words = set(stopwords.words('english'))
     i = 0
     for item in tweets:
         #print item.get("text")
-        tweet =  item.get('text').split(' ')
+        #tweet =  item.get('text').split(' ')
+        newtweet = re.sub(r"http\S+", "",item.get('text') )
+        tweet = tokenizer.tokenize(newtweet)
         #tweet.split(" ")
         #print tweet
         filteredTweet = ' '
@@ -263,6 +268,8 @@ def test():
         if inputstr.startswith("exit"):
             break
         global new_tweet, idf, words_set, new_tfidf, total_tweets, index_word, documents_per_word_count
+        global tokenizer
+        
         user_name = None
 
         #Get a single tweet
@@ -270,7 +277,9 @@ def test():
 
         #obtain the tf values for this tweet
         for item in new_tweets:
-            sentence = item.get("text").split()
+            newtweet = re.sub(r"http\S+", "",item.get('text'))
+            sentence = tokenizer.tokenize(newtweet)
+            #sentence = item.get("text").split()
             print "Hi", item.get("user").get("screen_name")+ ". Lets find some new users for you to follow."
             print "Post something on Twitter"
             print "Your New Tweet: ", item.get("text")
@@ -316,7 +325,7 @@ def test():
         #predict the label of new tweet
         global kmeans
         label = kmeans.predict(vector_matrix)
-        print label
+        print "Tweet classified in label:",label
 
 
         #Use this to recommend new users
