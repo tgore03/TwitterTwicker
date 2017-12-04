@@ -83,7 +83,6 @@ def load_data_from_json():
 
     global new_tweets
     new_tweets = data_dict['tweetno']
-    print new_tweet
 
 def get_tweets():
     #print "get_tweets()"
@@ -229,7 +228,7 @@ def KmeansAnalysis():
     labels = kmeans.labels_  # and the labels
     #print len(centroids[0])
     #print len(labels)
-    print labels.tolist()
+    #print labels.tolist()
     count = count + 1
     print "Prediction Model Generated\n"
 
@@ -257,11 +256,10 @@ def train():
     return kmeans
 
 def test():
-    print
+    print "\n\n*****************************************************************\n"
     while True:
-        #print "\n\n\n\n *****************************************************************\n"
-
-        inputstr=raw_input("Press Enter for next iterations or type 'exit' to end. \n")
+        print
+        inputstr=raw_input("Please press 'Enter' for next iterations or type 'exit' to end. \n")
         if inputstr.startswith("exit"):
             break
         global new_tweet, idf, words_set, new_tfidf, total_tweets, index_word, documents_per_word_count
@@ -272,7 +270,6 @@ def test():
 
         #obtain the tf values for this tweet
         for item in new_tweets:
-            print
             sentence = item.get("text").split()
             print "Hi", item.get("user").get("screen_name")+ ". Lets find some new users for you to follow."
             print "Post something on Twitter"
