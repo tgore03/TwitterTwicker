@@ -21,7 +21,7 @@ def getTrainingSet():
     twitter_stream = TwitterStream(auth=oauth)
 
     # Get a sample of the public data following through Twitter
-    iterator = twitter_stream.statuses.sample()
+    iterator = twitter_stream.statuses.filter(track = "the", language="en")
 
     # Print each tweet in the stream to the screen 
     # Here we set it to stop after getting 1000 tweets. 

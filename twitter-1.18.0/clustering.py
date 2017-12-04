@@ -46,6 +46,7 @@ def initvar():
 
 def load_data_from_file():
     #print "load_data()"
+    #getTrainingSet()
     global tweets
     tweets = json.load(open('data.json'))['tweetno']
 
@@ -59,10 +60,10 @@ def load_data_from_json():
     oauth = OAuth(ACCESS_TOKEN, ACCESS_SECRET, CONSUMER_KEY, CONSUMER_SECRET)
 
     # Initiate the connection to Twitter Streaming API
-    twitter_stream = TwitterStream(auth=oauth)
+    twitter_api = Twitter(auth=oauth)
 
     # Get a sample of the public data following through Twitter
-    iterator = twitter_stream.statuses.sample()
+    iterator = twitter_api.statuses.user_timeline(count =1, screen_name='tanmaygore_03')
 
     global data_dict
     tweet_count = 1
@@ -82,6 +83,7 @@ def load_data_from_json():
 
     global new_tweets
     new_tweets = data_dict['tweetno']
+    print new_tweet
 
 def get_tweets():
     #print "get_tweets()"
@@ -191,12 +193,12 @@ def AllWord():
 
 ##zerosOnEveryRecipe = np.zeros([len(tfidf),len(index_word)])
 def addingToZerosArr():
-    global tfidf, index_word, arr_tf, zerosOnEveryRecipe
+    global tfidf, index_word, arr_tf, zerosOnEveryRecipe, total_tweets
     #print "addingToZerosArr()"
     i = 0;
     ind = 0;
 
-    zerosOnEveryRecipe = np.zeros([len(tfidf),len(index_word)])
+    zerosOnEveryRecipe = np.zeros([total_tweets,len(index_word)])
     #print zerosOnEveryRecipe
 
     v = True;
@@ -217,17 +219,17 @@ def KmeansAnalysis():
     #print "KmeansAnalysis()"
 
     global zerosOnEveryRecipe, kmeans
-    arrayOfIntrest = np.array(zerosOnEveryRecipe)
+    arrayOfInterest = np.array(zerosOnEveryRecipe)
 
     count = 0
     kmeans = KMeans(n_clusters = 10, n_init = 10) #make ten clusters
     #while(count < 100):
-    kmeans.fit(arrayOfIntrest)  #fit the data - learning
+    kmeans.fit(arrayOfInterest)  #fit the data - learning
     centroids = kmeans.cluster_centers_  #grab the centroids
     labels = kmeans.labels_  # and the labels
     #print len(centroids[0])
     #print len(labels)
-    #print labels.tolist()
+    print labels.tolist()
     count = count + 1
     print "Prediction Model Generated\n"
 
