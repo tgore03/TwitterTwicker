@@ -406,7 +406,7 @@ def test():
         ################### COSINE SIMILARITY ###################
 
         #Obtain data for cosine similarity
-        print len(index_word)
+        #print len(index_word)
         cc =np.ndarray(shape=(no_of_clusters, len(index_word)), dtype = float)
         centroids = kmeans.cluster_centers_  #grab the centroids
 
