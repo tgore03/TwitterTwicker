@@ -17,6 +17,7 @@ from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.tokenize import RegexpTokenizer
 import string, re
+import operator
 
 idf = {}                    #idf value of each unique word from all tweets
 arr_tf = None               #tf value of each word in each tweet
@@ -49,7 +50,7 @@ tokenizer = RegexpTokenizer(r'\w+')
 
 def initvar():
     global tfidf, words_set, total, arr_tf, index_word
-    tfidf = [{}]
+    tfidf = []
     words_set = {}
     total = 0
     arr_tf = []
@@ -111,6 +112,7 @@ def get_tweets():
 
         #tweet =  item.get('text').split(' ')
         newtweet = re.sub(r"http\S+", "",item.get('text') )
+        newtweet=newtweet.lower()
         tweet = tokenizer.tokenize(newtweet)
 
         #tweet.split(" ")
@@ -168,13 +170,13 @@ def get_tweets():
         documents_per_word_count[word] = doc_word_freq
 
 
-	#tfidf = []
+    #tfidf = []
     for item in arr_tf:
         temp_tfidf = {}
         for k, v in item.items():
             idf_val = idf[k]
             temp_tfidf[k] = idf[k]*v
-            tfidf.append(temp_tfidf)
+        tfidf.append(temp_tfidf)
 
     #print "tfidf obtained"
 
@@ -301,8 +303,8 @@ def test():
         inputstr=raw_input("Please press 'Enter' for next iterations or type 'exit' to end. \n")
         if inputstr.startswith("exit"):
             break
-        global new_tweet, idf, words_set, new_tfidf, total_tweets, index_word, documents_per_word_count, zerosOnEveryRecipe
-        global tokenizer
+        global new_tweet, idf, words_set, new_tfidf, total_tweets, index_word, documents_per_word_count, zerosOnEveryRecipe, tfidf
+        global tokenizer, classified_tweets
         global kmeans, users, similar_tweets, tweets_in_clusters, no_of_clusters
         
         user_name = None
@@ -313,6 +315,7 @@ def test():
         #obtain the tf values for this tweet
         for item in new_tweets:
             newtweet = re.sub(r"http\S+", "",item.get('text'))
+            newtweet = newtweet.lower()
             sentence = tokenizer.tokenize(newtweet)
             #sentence = item.get("text").split()
             print "Hi", item.get("user").get("screen_name")+ ". Lets find some new users for you to follow."
@@ -346,7 +349,7 @@ def test():
         #Compute the vector matrix
         #print len(index_word)
         vector_matrix = np.zeros([1, len(index_word)]) #initialize elements in vector matrix to 0
-        nC =np.ndarray(shape=(1, len(index_word)), dtype = float)
+        nC = np.ndarray(shape=(1, len(index_word)), dtype = float)
         for word in new_tfidf:
             if word in index_word:
                 index = index_word[word]
@@ -391,32 +394,68 @@ def test():
 
 
 
-        #jac_sim = []
-        #i = 0
-        #sim = 0.0
-        #intersection=0
-        #for k,v in similar_tweets.items():
-        #    for k1,v1 in new_tfidf.items():
-        #        if k1 in v:
-        #            intersection+=1
-        #    print "intersection: ",intersection, "union: ", len(v)
-        #    sim =  float(intersection)/len(v)
-        #    jac_sim.append(sim)
+
+        ################### JACCARD SIMILARITY  ############################
+
+        print
+        #print "Jaccard Similarity Results:"
+
+        #print new_tfidf
+        jac_similarity = {}
+        jac_labels = []
+        jac_total = [0 for i in range(0,6)]
+        jac_count = [0 for i in range(0,6)]
+        jac_avg=[0 for i in range(0,6)]
+        
+        for counter in range(0,1000):
+            intersection = 0;
+            
+            for word in new_tfidf:
+                if word.lower() in tfidf[counter]:
+                    intersection +=1
+
+            #get Jac similarity
+            jac_similarity[counter] = 1.0*intersection / (len(new_tfidf)+len(tfidf[counter]))
+
+        for i in jac_similarity:
+            if jac_similarity[i] >0:
+                #print jac_similarity[i], classified_tweets[i]
+                l = classified_tweets[i]
+                jac_labels.append(l)
+                jac_total[l]  +=jac_similarity[i]
+                jac_count[l] +=1
+
+        #print "Similarity between Clusters and new tweet:"
+        max_cluster = None
+        max_count=0
+        for i in range(0, 6):
+            if jac_count[i] >0:
+                jac_avg[i] = jac_total[i]/jac_count[i]
+            #print "Cluster No:", i, "No. of Common Words", jac_count[i], "Jaccard Similarity Measure:", jac_avg[i]
+            if jac_count[i] > max_count:
+                max_count = jac_count[i]
+                max_cluster = i
+                
+        #print "\nSince cluster", max_cluster, "has most number of common words:", max_count, ". The tweet was classified in cluster:", max_cluster
+    
+
+        #print jac_labels
+                        
             
         ################### COSINE SIMILARITY ###################
 
         #Obtain data for cosine similarity
         #print len(index_word)
-        cc =np.ndarray(shape=(no_of_clusters, len(index_word)), dtype = float)
-        centroids = kmeans.cluster_centers_  #grab the centroids
+        #cc =np.ndarray(shape=(no_of_clusters, len(index_word)), dtype = float)
+        #centroids = kmeans.cluster_centers_  #grab the centroids
 
-        index =0
-        for item in centroids:
-            cc[index] = item
-            index +=1
+        #index =0
+        #for item in centroids:
+        #    cc[index] = item
+        #    index +=1
 
         #perform cosine similarity for the data
-        cos_sim = cosine_similarity(cc, nC)
+        #cos_sim = cosine_similarity(cc, nC)
         #print "cos sim", cos_sim
 
 
