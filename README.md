@@ -1,10 +1,1 @@
-Consumer Key (API Key) pIboRFJU8EN17UVyis1qCuOtS
-Consumer Secret (API Secret) 52XINB2kmqBPdlNv1WCHreoJI9vpmBtyfqywBnSFUQnbrMUmFO
-Owner tanmaygore_03
-Owner ID 927683752532365313
-
-
-Access Token 927683752532365313-tBAFC5zBzRpG7PcF8K9Hq9fPltGLyhe
-Access Token Secret 4fHIQYa3CMOAJJqt4HqjQamVoJu4LvZWha3x8KczLCb1x
-Owner tanmaygore_03
-Owner ID 927683752532365313
+A recommendation system for twitter that identifies new followers for a user based on the popularity of words within his tweets. The described method maps the tweets to TF-IDF vectors in a sparse zero matrix and clusters this data using k-means clustering. The method then computes a new TF-IDF vector array for the new tweet and classifies it to one of the clusters obtained from k-means. 
