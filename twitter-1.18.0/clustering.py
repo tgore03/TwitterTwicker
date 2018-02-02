@@ -425,18 +425,18 @@ def test():
                 jac_total[l]  +=jac_similarity[i]
                 jac_count[l] +=1
 
-        #print "Similarity between Clusters and new tweet:"
+        print "Similarity between Clusters and new tweet:"
         max_cluster = None
         max_count=0
         for i in range(0, 6):
             if jac_count[i] >0:
                 jac_avg[i] = jac_total[i]/jac_count[i]
-            #print "Cluster No:", i, "No. of Common Words", jac_count[i], "Jaccard Similarity Measure:", jac_avg[i]
+            print "Cluster No:", i, "No. of Common Words", jac_count[i], "Jaccard Similarity Measure:", jac_avg[i]
             if jac_count[i] > max_count:
                 max_count = jac_count[i]
                 max_cluster = i
                 
-        #print "\nSince cluster", max_cluster, "has most number of common words:", max_count, ". The tweet was classified in cluster:", max_cluster
+        print "\nSince cluster", max_cluster, "has most number of common words:", max_count, ". The tweet was classified in cluster:", max_cluster
     
 
         #print jac_labels
